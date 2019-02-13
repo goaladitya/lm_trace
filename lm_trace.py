@@ -49,19 +49,17 @@ def callback(ch, method, properties, body):
         # lm_data = S3Connection._get_from_s3(CLIENT, cons.s3_bucket, cons.s3_key)
         lm_data = json.load(open(lm_data_repo_link))
         lm_data = add_is_middle(lm_data)
-        lm_data_str = json.dumps(lm_data)
-        obj = Trace(lm_data_str, 'LM', 60, config.V3_HEADERS, config.V3_GEOFENCING_URL)
+        obj = Trace(lm_data, 'LM', 60, config.V3_HEADERS, config.V3_GEOFENCING_URL)
         # Execute processes parallel
         logger.info("Calling get_trace_intel and run_route_stats parallel")
         pool = ThreadPoolExecutor(max_workers=2)
         trace_intel_future = pool.submit(obj.get_trace_intel)
-        route_stats_future = pool.submit(run_route_stats, lm_data_str, config.MATCH_SERVICE_STRING,
+        route_stats_future = pool.submit(run_route_stats, lm_data, config.MATCH_SERVICE_STRING,
                                          config.ROUTE_SERVICE_STRING, config.ROUTE_HEADERS)
         pool.shutdown(wait=True)
 
-        trace_intel_str = trace_intel_future.result()
+        trace_intel = trace_intel_future.result()
         trip_distance, route_stats_error, route_stats_error_reason = route_stats_future.result()
-        trace_intel = json.loads(trace_intel_str)
         trace_intel['meta_data']['trip_distance'] = trip_distance
         trace_intel['meta_data']['route_stats_error'] = route_stats_error
         trace_intel['meta_data']['route_stats_error_reason'] = route_stats_error_reason
