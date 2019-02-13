@@ -1,5 +1,6 @@
 __pycache__/
 data/
 wrapper_output/
+.idea/
 config.py
 consumer2.py
